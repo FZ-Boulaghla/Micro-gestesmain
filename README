@@ -128,13 +128,6 @@ Le dossier `wokwi_final/` contient un exemple PlatformIO prêt pour simulation s
 
 ---
 
-## Souhaite‑tu que je :
-
-- ajoute un script pour convertir automatiquement `model_int8.tflite` → `include/model_data.h` ?
-- crée un guide pas‑à‑pas pour déployer et tester sur Wokwi ?
-
-Réponds ce que tu veux que je fasse ensuite.
-
 # Détection de Micro‑Gestes — Dataset → Modèle ML → ESP32 (TFLite Micro)
 
 Ce projet implémente une chaîne complète de **reconnaissance de micro‑gestes** à partir d’un **capteur discret de proximité** (signal binaire 0/1) :
@@ -180,7 +173,7 @@ Micro‑gestes reconnus : **tap**, **swipe_rapide**, **swipe_lent**.
 
 ---
 
-## 1) Générer le dataset
+## Générer le dataset
 
 Le script simule `N_EPISODES = 3000` séquences binaires avec :
 - **Durée d’activation** (valeurs `1`) : **30–1500 ms**
