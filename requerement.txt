@@ -1,0 +1,16 @@
+
+# --- Core scientific stack ---
+numpy>=1.24
+pandas>=2.0
+scikit-learn>=1.2
+
+# --- Machine Learning / Deep Learning ---
+# TensorFlow CPU (suffisant pour entraînement + conversion TFLite)
+# Choisir la version 2.12–2.15 selon votre environnement.
+tensorflow>=2.12,<2.16
+
+# Optionnel mais recommandé pour le pruning + QAT
+tensorflow-model-optimization>=0.8
+
+# --- Utilities / Debug / Visualisation ---
+matplotlib>=3.7

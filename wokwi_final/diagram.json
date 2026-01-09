@@ -1,0 +1,71 @@
+
+{
+  "version": 1,
+  "author": "fatimazahra",
+  "editor": "wokwi",
+  "parts": [
+    {
+      "type": "board-esp32-s3-devkitc-1",
+      "id": "esp32",
+      "top": 40,
+      "left": -360,
+      "attrs": {}
+    },
+    {
+      "type": "board-ili9341-cap-touch",
+      "id": "lcd1",
+      "top": -160,
+      "left": -80,
+      "attrs": { "rotation": "90" }
+    },
+    {
+      "type": "wokwi-led",
+      "id": "led_red",
+      "top": 150,
+      "left": -140,
+      "attrs": { "color": "red" }
+    },
+    {
+      "type": "wokwi-led",
+      "id": "led_yellow",
+      "top": 210,
+      "left": -140,
+      "attrs": { "color": "yellow" }
+    },
+    {
+      "type": "wokwi-led",
+      "id": "led_green",
+      "top": 270,
+      "left": -140,
+      "attrs": { "color": "green" }
+    }
+  ],
+  "connections": [ 
+    [ "$serialMonitor:RX", "esp32:TX", "", [] ],
+    [ "$serialMonitor:TX", "esp32:RX", "", [] ],
+ 
+    [ "lcd1:GND",  "esp32:GND.1", "black", [] ],
+    [ "lcd1:VCC",  "esp32:5V",    "red",   [] ],
+    [ "lcd1:CS",   "esp32:15",    "yellow", [] ],
+    [ "lcd1:D/C",  "esp32:2",     "orange", [] ],
+    [ "lcd1:SCK",  "esp32:12",    "blue",   [] ],
+    [ "lcd1:MOSI", "esp32:11",    "purple", [] ],
+    [ "lcd1:MISO", "esp32:13",    "green",  [] ],
+    [ "lcd1:RST",  "esp32:4",     "pink",   [] ],
+    [ "lcd1:LED",  "esp32:6",     "white",  [] ],   
+ 
+    [ "lcd1:SDA",  "esp32:10",    "gold",   [] ],
+    [ "lcd1:SCL",  "esp32:8",     "cyan",   [] ],
+ 
+    [ "esp32:47", "led_red:A",    "red",    [] ],
+    [ "led_red:C", "esp32:GND.2", "black",  [] ],
+
+    [ "esp32:48", "led_yellow:A", "yellow", [] ],
+    [ "led_yellow:C", "esp32:GND.2", "black", [] ],
+
+    [ "esp32:14", "led_green:A",  "green",  [] ],
+    [ "led_green:C", "esp32:GND.2", "black", [] ]
+  ],
+  "serialMonitor": { "display": "always" },
+  "dependencies": {}
+}

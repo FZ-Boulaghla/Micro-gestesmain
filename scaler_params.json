@@ -1,0 +1,26 @@
+{
+  "feature_names": [
+    "ratio_occupation",
+    "nb_transitions",
+    "duree_max_bloc_1_ms",
+    "duree_activation_estimee_ms",
+    "temps_repos_avant_ms",
+    "temps_repos_apres_ms"
+  ],
+  "Xmin": [
+    0.015,
+    2.0,
+    30.0,
+    30.0,
+    32.5,
+    5.0
+  ],
+  "Xmax": [
+    0.74875,
+    4.0,
+    1497.5,
+    1497.5,
+    1217.5,
+    1225.0
+  ]
+}

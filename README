@@ -1,0 +1,58 @@
+
+# Détection de Micro‑Gestes — Dataset → Modèle ML → ESP32 (TFLite Micro)
+
+Ce projet implémente une chaîne complète de **reconnaissance de micro‑gestes** à partir d’un **capteur discret de proximité** (signal binaire 0/1) :
+1. **Génération d’un dataset synthétique** (séquences 0/1 + features).
+2. **Entraînement d’un MLP** (TensorFlow/Keras) et **quantification TFLite INT8**.
+3. **Exécution embarquée sur ESP32** (TensorFlow Lite Micro) avec affichage par **LEDs**.
+
+Micro‑gestes reconnus : **tap**, **swipe_rapide**, **swipe_lent**.
+
+---
+
+## Aperçu
+
+- **Entrée capteur (0/1)** à **400 Hz** sur une **fenêtre de 2000 ms** (800 échantillons).
+- **Features** calculées sur la fenêtre :
+  1. `ratio_occupation`
+  2. `nb_transitions`
+  3. `duree_max_bloc_1_ms`
+  4. `duree_activation_estimee_ms`
+  5. `temps_repos_avant_ms`
+  6. `temps_repos_apres_ms`
+- **Labels** dérivés d’un score synthétique (seuils aux percentiles 33/66) → `tap` / `swipe_rapide` / `swipe_lent`.
+- **Modèle MLP** : Dense(16, ReLU) → Dense(3, Softmax), **quantifié INT8** pour MCU.
+- **ESP32** : extraction des features + normalisation min‑max + inférence TFLM → LEDs.
+
+---
+
+## Prérequis
+
+### Python (≥ 3.9 recommandé)
+- `numpy`, `pandas`, `scikit-learn`
+- `tensorflow` (CPU par défaut)
+- `tensorflow-model-optimization` *(optionnel : pruning + QAT)*
+
+> Conseil : créez un environnement virtuel et installez via `pip install -r requirements.txt` (si vous l’utilisez).
+
+### ESP32 / Arduino / PlatformIO
+- Carte **ESP32 DevKit V1**
+- Bibliothèque **TensorFlowLite_ESP32**
+- Arduino Core pour ESP32
+- Trois LEDs (rouge/jaune/verte) + résistances
+- Un capteur discret (digital 0/1), entrée **pull‑up**
+
+---
+
+## 1) Générer le dataset
+
+Le script simule `N_EPISODES = 3000` séquences binaires avec :
+- **Durée d’activation** (valeurs `1`) : **30–1500 ms**
+- **Temps de repos** avant/après : **40–600 ms**
+- Fenêtre : **2000 ms** (800 échantillons à **400 Hz**)
+
+Exécutez :
+
+```bash
+cd dataset_generation
+python generate_dataset.py
