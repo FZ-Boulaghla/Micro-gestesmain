@@ -1,3 +1,139 @@
+# Détection de Micro‑Gestes — Dataset → Modèle ML → ESP32 (TFLite Micro)
+
+Ce dépôt contient une chaîne complète pour la détection de micro‑gestes à partir d'un signal binaire (0/1) de proximité :
+
+- génération d'un dataset synthétique (_features_ par fenêtre),
+- entraînement d'un MLP (TensorFlow/Keras), conversion en TFLite INT8,
+- déploiement sur ESP32 (TensorFlow Lite Micro) avec exemple PlatformIO/Wokwi.
+
+Micro‑gestes cibles : `tap`, `swipe_rapide`, `swipe_lent`.
+
+---
+
+## Structure et fichiers importants
+
+- `generate_dataset.py` : génère `microgestes_dataset.csv` et `scaler_params.json` (min/max des features).
+- `microgestes_dataset.csv` : dataset complet (features, score, label, class_name).
+- `scaler_params.json` : paramètres de normalisation (Xmin, Xmax) calculés sur l'entraînement.
+- `train_mlp.py` : entraîne un MLP simple, évalue, sauvegarde `model_float.h5` et convertit en `model_int8.tflite` (PTQ). Contient une section optionnelle QAT/pruning si `tensorflow_model_optimization` est présent.
+- `model_float.h5`, `model_int8.tflite` : modèles sauvegardés.
+- `wokwi_final/` : projet PlatformIO / Wokwi pour exécuter le modèle sur un ESP32 (contient `include/model_data.h` et `src/main.cpp`).
+- `requirements.txt` : dépendances Python (installer dans un venv recommandé).
+
+---
+
+## Aperçu technique
+
+- Fréquence d'échantillonnage : `fs = 400` Hz.
+- Fenêtre d'analyse : `WIN_MS = 2000` ms (800 échantillons).
+- Features extraites (par fenêtre) :
+  1. `ratio_occupation`
+  2. `nb_transitions`
+  3. `duree_max_bloc_1_ms`
+  4. `duree_activation_estimee_ms`
+  5. `temps_repos_avant_ms`
+  6. `temps_repos_apres_ms`
+
+- Labellisation : un score synthétique est calculé puis les percentiles 33/66 définissent les trois classes. Les noms de classes (`tap`, `swipe_rapide`, `swipe_lent`) sont mappés selon la médiane des durées.
+
+---
+
+## Installation (Python)
+
+1. Créez un environnement virtuel :
+
+```bash
+python -m venv .venv
+source .venv/bin/activate   # Linux / macOS
+.venv\Scripts\activate    # Windows (PowerShell)
+```
+
+2. Installez les dépendances :
+
+```bash
+pip install -r requerement.txt
+```
+
+Remarque : les noms de paquets et versions sont dans `requerement.txt`.
+
+---
+
+## Exécuter les scripts
+
+- Générer le dataset + scaler :
+
+```bash
+python generate_dataset.py
+```
+
+Résultat : `microgestes_dataset.csv` et `scaler_params.json`.
+
+- Entraîner le MLP et convertir en TFLite INT8 :
+
+```bash
+python train_mlp.py
+```
+
+Résultat : `model_float.h5` et `model_int8.tflite` (et éventuellement `model_qat_pruned_int8.tflite`).
+
+---
+
+## Normalisation
+
+Les valeurs des features sont normalisées par min‑max en utilisant `Xmin` / `Xmax` extraits du jeu d'entraînement. Le code embarqué doit appliquer la même normalisation avant d'alimenter le modèle TFLite.
+
+Formule utilisée :
+
+```
+X_norm = (X - Xmin) / max(Xmax - Xmin, 1e-6)
+```
+
+---
+
+## Conversion du modèle pour l'embarqué
+
+Pour exécuter le TFLite sur ESP32 avec TensorFlow Lite Micro, le modèle `.tflite` doit être incorporé dans le firmware sous forme d'un tableau C (ex. `const unsigned char model[]`). Une conversion courante :
+
+```bash
+xxd -i model_int8.tflite > model_data.h
+```
+
+Ensuite, placer `model_data.h` dans `wokwi_final/include/` (ou remplacer le fichier existant).
+
+---
+
+## Projet PlatformIO / Wokwi
+
+Le dossier `wokwi_final/` contient un exemple PlatformIO prêt pour simulation sur Wokwi :
+
+- `include/model_data.h` : contiendra le binaire du modèle TFLite en array C.
+- `src/main.cpp` : lecture du capteur, calcul des features, normalisation, inférence TFLM, indication par LEDs.
+ - `diagram.json` : fichier de schéma Wokwi (composants, connexions et disposition). Ouvrez-le dans Wokwi pour charger la simulation matérielle (LEDs, capteur, broches ESP32).
+
+Étapes pour tester sur Wokwi :
+
+1. Générer `model_int8.tflite` via `train_mlp.py`.
+2. Convertir en `model_data.h` (cf. commande `xxd`).
+3. Copier `scaler_params.json` ou inscrire ses valeurs dans le firmware.
+4. Ouvrir le projet `wokwi_final/` dans Wokwi ou PlatformIO et lancer la simulation.
+
+---
+
+## Conseils d'amélioration
+
+- Collecte de données réelles pour remplacer/compléter la simulation.
+- Augmenter la diversité du dataset (bruit, perturbations matérielles).
+- Tester QAT (quantization-aware training) pour améliorer la précision INT8.
+- Expérimenter architectures plus profondes ou features temps‑fréquence si nécessaire.
+
+---
+
+## Souhaite‑tu que je :
+
+- ajoute un script pour convertir automatiquement `model_int8.tflite` → `include/model_data.h` ?
+- crée un guide pas‑à‑pas pour déployer et tester sur Wokwi ?
+
+Réponds ce que tu veux que je fasse ensuite.
 
 # Détection de Micro‑Gestes — Dataset → Modèle ML → ESP32 (TFLite Micro)
 
@@ -51,8 +187,4 @@ Le script simule `N_EPISODES = 3000` séquences binaires avec :
 - **Temps de repos** avant/après : **40–600 ms**
 - Fenêtre : **2000 ms** (800 échantillons à **400 Hz**)
 
-Exécutez :
 
-```bash
-cd dataset_generation
-python generate_dataset.py
